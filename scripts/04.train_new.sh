@@ -63,17 +63,25 @@ MODEL_VERSION="${MODEL_VERSION:-act}"
 OUTPUT_DIR="${OUTPUT_DIR:-outputs/train/${MODEL_VERSION}}"
 JOB_NAME="${JOB_NAME:-act_pilot_${MODEL_VERSION}}"
 
+# macOS → mps, Ubuntu/Linux → cuda (conda 환경에서 GPU 사용)
+if [[ "$(uname -s)" == "Linux" ]]; then
+  POLICY_DEVICE="${POLICY_DEVICE:-cuda}"
+else
+  POLICY_DEVICE="${POLICY_DEVICE:-mps}"
+fi
+
 echo ""
 echo "Dataset: repo_id=${REPO_ID} root=${DATASET_ROOT}"
 echo "Model:   ${MODEL_VERSION}"
 echo "Output:  ${OUTPUT_DIR}"
+echo "Device:  ${POLICY_DEVICE}"
 echo ""
 
 lerobot-train \
   --dataset.repo_id="${REPO_ID}" \
   --dataset.root="${DATASET_ROOT}" \
   --policy.type=act \
-  --policy.device=mps \
+  --policy.device="${POLICY_DEVICE}" \
   --policy.push_to_hub=false \
   --output_dir="${OUTPUT_DIR}" \
   --job_name="${JOB_NAME}" \
