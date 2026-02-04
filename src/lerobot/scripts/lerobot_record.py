@@ -60,9 +60,11 @@ lerobot-record \
   --dataset.num_episodes=25 \
   --dataset.single_task="Grab and handover the red cube to the other arm"
 ```
+
 """
 
 import logging
+import os
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -315,6 +317,7 @@ def record_loop(
 
     timestamp = 0
     start_episode_t = time.perf_counter()
+    logged_no_control = False
     while timestamp < control_time_s:
         start_loop_t = time.perf_counter()
 
@@ -360,11 +363,11 @@ def record_loop(
             act = {**arm_action, **base_action} if len(base_action) > 0 else arm_action
             act_processed_teleop = teleop_action_processor((act, obs))
         else:
-            logging.info(
-                "No policy or teleoperator provided, skipping action generation."
-                "This is likely to happen when resetting the environment without a teleop device."
-                "The robot won't be at its rest position at the start of the next episode."
-            )
+            if not logged_no_control and dataset is not None:
+                logging.warning(
+                    "No policy or teleoperator provided during recording, skipping action generation."
+                )
+                logged_no_control = True
             continue
 
         # Applies a pipeline to the action, default is IdentityProcessor
@@ -485,6 +488,9 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
 
         listener, events = init_keyboard_listener()
 
+        if os.environ.get("DEMO_WAIT_ENTER"):
+            input("Press Enter to start the demo... ")
+
         with VideoEncodingManager(dataset):
             recorded_episodes = 0
             while recorded_episodes < cfg.dataset.num_episodes and not events["stop_recording"]:
@@ -535,6 +541,14 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
                     log_say("Re-record episode", cfg.play_sounds)
                     events["rerecord_episode"] = False
                     events["exit_early"] = False
+                    dataset.clear_episode_buffer()
+                    continue
+
+                if dataset.episode_buffer is None or dataset.episode_buffer.get("size", 0) == 0:
+                    logging.warning(
+                        "Episode has no frames (exit_early or zero duration?), skipping save. "
+                        "Try again or check dataset.episode_time_s."
+                    )
                     dataset.clear_episode_buffer()
                     continue
 

@@ -47,6 +47,8 @@ class TrainPipelineConfig(HubMixin):
     # Note that when resuming a run, the default behavior is to use the configuration from the checkpoint,
     # regardless of what's provided with the training command at the time of resumption.
     resume: bool = False
+    # When resuming: if True, reset step counter to 0 and train for another full `steps` (e.g. new data).
+    resume_reset_steps: bool = False
     # `seed` is used for training (eg: model initialization, dataset shuffling)
     # AND for the evaluation environments.
     seed: int | None = 1000

@@ -2,9 +2,10 @@
 # LeRobot 데이터 수집 — 리더암으로 조작하면서 에피소드 녹화
 # 텔레오프(01.teleop.sh)와 동일한 로봇/카메라 설정. dataset.repo_id, single_task 필요.
 #
-# 사용법 (프로젝트 루트에서):
-#   ./scripts/02.record.sh                    # 실행 시 SINGLE_TASK 입력 프롬프트
-#   SINGLE_TASK="큐브 잡아서 상자에 넣기" ./scripts/02.record.sh   # 환경변수로 지정
+# 사용 예 (프로젝트 루트에서):
+#   ./scripts/02.record.sh
+#   SINGLE_TASK="큐브 잡아서 상자에 넣기" ./scripts/02.record.sh
+#   NUM_EPISODES=5 REPO_ID=woolim/my_task ./scripts/02.record.sh
 #
 # 환경변수:
 #   ROBOT_PORT         팔로워(로봇) 시리얼 포트
@@ -14,7 +15,7 @@
 #   REPO_ID            데이터셋 repo_id (기본: woolim/record). 훈련 시 같은 이름 사용
 #   DATASET_ROOT       데이터 저장 로컬 경로. 비우면 ./data/<SINGLE_TASK> 사용 (공백·/·: 는 _ 로 치환)
 #   SINGLE_TASK        태스크 설명. 비우면 실행 시 입력 프롬프트. 기본 데이터 폴더명으로도 사용
-#   NUM_EPISODES       녹화할 에피소드 수 (기본: 10)
+#   NUM_EPISODES       녹화할 에피소드 수 (기본: 25)
 #   DISPLAY_DATA       화면에 카메라 표시 (기본: true)
 #   PUSH_TO_HUB        녹화 후 Hub 업로드 (기본: false). true 로 올리기
 #
@@ -35,7 +36,7 @@ CAMERA_FPS="${CAMERA_FPS:-30}"
 
 REPO_ID="${REPO_ID:-woolim/record}"
 SINGLE_TASK="${SINGLE_TASK:-}"
-NUM_EPISODES="${NUM_EPISODES:-5}"
+NUM_EPISODES="${NUM_EPISODES:-25}"
 DISPLAY_DATA="${DISPLAY_DATA:-true}"
 PUSH_TO_HUB="${PUSH_TO_HUB:-false}"
 

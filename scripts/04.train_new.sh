@@ -11,6 +11,10 @@
 #
 # 기본: steps=10000, save_freq=5000 (5k·10k 스텝에 체크포인트 저장)
 #
+# wandb: 기본 offline. 나중에 업로드: wandb sync outputs/train/<MODEL_VERSION>
+#
+# 무한 대기 시: num_workers=0 이 기본. 그래도 멈추면 --dataset.video_backend=pyav 로 실행.
+#
 # 체크포인트 이어서 훈련: ./scripts/04.train_resume.sh
 #
 # 종료: Ctrl+C
@@ -70,11 +74,18 @@ else
   POLICY_DEVICE="${POLICY_DEVICE:-mps}"
 fi
 
+# DataLoader 워커 0으로 두면 멈춤 현상 감소 (멀티프로세스+비디오 디코딩에서 자주 발생)
+NUM_WORKERS="${NUM_WORKERS:-0}"
+export WANDB_MODE="${WANDB_MODE:-offline}"
+
 echo ""
 echo "Dataset: repo_id=${REPO_ID} root=${DATASET_ROOT}"
 echo "Model:   ${MODEL_VERSION}"
 echo "Output:  ${OUTPUT_DIR}"
-echo "Device:  ${POLICY_DEVICE}"
+echo "Device:  ${POLICY_DEVICE}  num_workers=${NUM_WORKERS}"
+echo "Wandb:   ${WANDB_MODE} (sync: wandb sync ${OUTPUT_DIR})"
+echo ""
+echo "Starting training... (첫 배치 로딩에 1–2분 걸릴 수 있음)"
 echo ""
 
 lerobot-train \
@@ -88,8 +99,8 @@ lerobot-train \
   --dataset.image_transforms.enable=true \
   --wandb.enable=true \
   --steps=10000 \
-  --batch_size=16 \
-  --num_workers=2 \
+  --batch_size=8 \
+  --num_workers="${NUM_WORKERS}" \
   --save_checkpoint=true \
   --save_freq=1000 \
   --dataset.video_backend=torchcodec \

@@ -315,6 +315,8 @@ def train(cfg: TrainPipelineConfig, accelerator: Accelerator | None = None):
 
     if cfg.resume:
         step, optimizer, lr_scheduler = load_training_state(cfg.checkpoint_path, optimizer, lr_scheduler)
+        if getattr(cfg, "resume_reset_steps", False):
+            step = 0
 
     num_learnable_params = sum(p.numel() for p in policy.parameters() if p.requires_grad)
     num_total_params = sum(p.numel() for p in policy.parameters())
